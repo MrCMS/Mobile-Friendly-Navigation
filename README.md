@@ -35,8 +35,8 @@ Make sure you are using @Styles.Render(AppStylesheetBundle.VirtualUrl) and @Scri
 # Screen Grabs
 
 ![Desktop View](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
-![Mobile Action Nav](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
-![Mobile View](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
+![Mobile Action Nav](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-2.png)
+![Mobile View](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-3.png)
 
 # Mr CMS Support
 Version 0.5 +
