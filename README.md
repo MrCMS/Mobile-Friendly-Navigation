@@ -1,5 +1,5 @@
 # Mobile Friendly Navigation
-A navigation app containing a widget to be used when you need multi-tier navigation as well as a mobile friendly navigation.
+A Mr CMS navigation app containing a widget to be used when you need multi-tier navigation as well as a mobile friendly navigation.
 
 # Installation
 Include the App files in to your solution through Visual Studio.
@@ -40,3 +40,7 @@ Make sure you are using @Styles.Render(AppStylesheetBundle.VirtualUrl) and @Scri
 
 # Mr CMS Support
 Version 0.5 +
+
+
+# Known Issues
+If after adding a page your new page does not show in the navigation, please clear the cache from System -> Clear Caches -> Clear.
