@@ -1,8 +1,8 @@
 # Mobile Friendly Navigation
-A navigation app containing a widget to be used when you need multi-tier navigation as well as a mobile friendly fallback.
+A navigation app containing a widget to be used when you need multi-tier navigation as well as a mobile friendly navigation.
 
 # Installation
-Include the app files within your Apps folder. Include the files in to your solution through Visual Studio.
+Include the App files in to your solution through Visual Studio.
 
 # Usage
 In order to get the navigation app working first replace the navigation widget in your nav bar with "Mobile Friendly Navigation".
@@ -30,8 +30,13 @@ After your navbar include the following:
 
 The first HTML block is what we use as a container for the left nav slide in on mobile. The second HTML block is the navbar which shows the button to action the mobile menu.
 
+Make sure you are using @Styles.Render(AppStylesheetBundle.VirtualUrl) and @Scripts.Render(AppScriptBundle.VirtualUrl) in your _Layout for the scripts and CSS to be included. If you are managing this yourself, make sure to include the files from within Content\Scripts and Content\Styles.
+
 # Screen Grabs
 
 ![Desktop View](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
 ![Mobile Action Nav](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
 ![Mobile View](https://mrcms.blob.core.windows.net/web/1/mobile-friendly-navigation/mobile-nav-1.png)
+
+# Mr CMS Support
+Version 0.5 +
