@@ -10,12 +10,10 @@
     };
 }
 
-
 <div class="form-group">
     @Html.LabelFor(navigation => navigation.RootWebpage.Id, "Root webpage")
     @Html.DropDownListFor(navigation => navigation.RootWebpage.Id, rootWebpageOptions, new { @class = "form-control" })
 </div>
 <div class="form-group">
     @Html.InlineCheckboxFor(x => x.IncludeChildren)
-    @Html.InlineCheckboxFor(x => x.ShowRightMenu)
 </div>

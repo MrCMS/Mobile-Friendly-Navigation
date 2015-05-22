@@ -1,5 +1,5 @@
 ﻿.site-overlay { display: none; }
-.menu-close { display: none; }
+a.menu-close { display: none; }
 .mobile-action-nav{ display: none;  background: #428bca; color: #fff; font-size: 16px;margin-bottom: 20px;}
 .right-menu, .left-menu { display: none;}
 .mfnav li > a .glyphicon { display: none; }

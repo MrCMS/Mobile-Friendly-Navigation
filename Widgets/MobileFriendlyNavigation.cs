@@ -8,7 +8,5 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Widgets
         public virtual bool IncludeChildren { get; set; }
 
         public virtual Webpage RootWebpage { get; set; }
-
-        public virtual bool ShowRightMenu { get; set; }
     }
 }
