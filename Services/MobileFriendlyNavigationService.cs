@@ -4,11 +4,9 @@ using System.Linq;
 using MrCMS.Entities.Documents.Web;
 using MrCMS.Entities.Multisite;
 using MrCMS.Web.Apps.MobileFriendlyNavigation.Models.MobileFriendlyNavigation;
-using MrCMS.Website;
 using MrCMS.Website.Caching;
 using NHibernate;
-using NHibernate.Criterion;
-using NHibernate.Transform;
+using StackExchange.Profiling;
 
 namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
 {
@@ -19,29 +17,34 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
         private readonly IProcessChildNodes _processChildNodes;
         private readonly ICacheManager _cacheManager;
         private readonly Site _site;
+        private readonly IGetMobileFriendlyNavigationChildNodes _getMobileFriendlyNavigationChildNodes;
 
-        public MobileFriendlyNavigationService(ISession session, IProcessRootNodes processRootNodes, IProcessChildNodes processChildNodes, ICacheManager cacheManager, Site site)
+        public MobileFriendlyNavigationService(ISession session, IProcessRootNodes processRootNodes,
+            IProcessChildNodes processChildNodes, ICacheManager cacheManager, Site site, IGetMobileFriendlyNavigationChildNodes getMobileFriendlyNavigationChildNodes)
         {
             _session = session;
             _processRootNodes = processRootNodes;
             _processChildNodes = processChildNodes;
             _cacheManager = cacheManager;
             _site = site;
+            _getMobileFriendlyNavigationChildNodes = getMobileFriendlyNavigationChildNodes;
         }
 
         public List<MobileFriendlyNavigationRootNode> GetRootNodes(Webpage rootWebpage)
         {
-             return _cacheManager.Get(
+            using (MiniProfiler.Current.Step("Get Root Nodes"))
+            {
+                return _cacheManager.Get(
                     string.Format("mobile-friendly-nav.{0}.{1}", _site.Id, (rootWebpage == null ? "0" : rootWebpage.Id.ToString())), () =>
                     {
                         var rootNodes = _session.QueryOver<Webpage>()
                             .Where(
-                                node => node.Parent == rootWebpage && node.RevealInNavigation)
+                                node => node.Parent == rootWebpage && node.RevealInNavigation && node.Published)
                             .OrderBy(node => node.DisplayOrder).Asc
                             .Cacheable()
                             .List();
 
-                        var mobileFriendlyNavigationChildNodes = GetMobileFriendlyNavigationChildNodes(rootNodes);
+                        var mobileFriendlyNavigationChildNodes = _getMobileFriendlyNavigationChildNodes.GetNodes(rootNodes);
 
                         var mobileFriendlyNavigationRootNodes = rootNodes
                             .Select(root => new MobileFriendlyNavigationRootNode
@@ -58,12 +61,12 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
 
                         return mobileFriendlyNavigationRootNodes.OrderBy(node => node.DisplayOrder).ToList();
                     }, TimeSpan.FromMinutes(5), CacheExpiryType.Absolute);
-            
+            }
         }
 
         public List<MobileFriendlyNavigationChildNode> GetChildNodes(Webpage parent)
         {
-            var nodes = GetMobileFriendlyNavigationChildNodes(new List<Webpage> { parent });
+            var nodes = _getMobileFriendlyNavigationChildNodes.GetNodes(new List<Webpage> { parent });
             return GetChildNodeTransforms(nodes, parent);
         }
 
@@ -89,37 +92,6 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
                 });
             }
             return _processChildNodes.Process(nodes, parent).OrderBy(node => node.DisplayOrder).ToList();
-        }
-
-        private Dictionary<Webpage, List<MobileFriendlyNavigationChildNode>> GetMobileFriendlyNavigationChildNodes(IList<Webpage> parents)
-        {
-            Webpage webpageAlias = null;
-            MobileFriendlyNavigationChildNode nodeAlias = null;
-
-            var countSubNodes = QueryOver.Of<Webpage>()
-                .Where(x => x.Parent.Id == webpageAlias.Id && x.RevealInNavigation && x.PublishOn != null)
-                .ToRowCountQuery();
-
-            var parentIds = parents.Select(webpage => webpage.Id).ToList();
-            var nodes = _session.QueryOver(() => webpageAlias)
-                .Where(node => node.RevealInNavigation)
-                .Where(node => node.Parent.Id.IsIn(parentIds))
-                .OrderBy(x => x.DisplayOrder).Asc
-                .SelectList(x => x.Select(y => y.Id).WithAlias(() => nodeAlias.Id)
-                    .Select(y => y.Parent.Id).WithAlias(() => nodeAlias.ParentId)
-                    .Select(y => y.Name).WithAlias(() => nodeAlias.Name)
-                    .Select(y => y.UrlSegment).WithAlias(() => nodeAlias.UrlSegment)
-                    .Select(y => y.PublishOn).WithAlias(() => nodeAlias.PublishOn)
-                    .Select(y => y.DocumentType).WithAlias(() => nodeAlias.DocumentType)
-                    .Select(y => y.DisplayOrder).WithAlias(() => nodeAlias.DisplayOrder)
-                    .SelectSubQuery(countSubNodes).WithAlias(() => nodeAlias.ChildCount))
-                .TransformUsing(Transformers.AliasToBean<MobileFriendlyNavigationChildNode>())
-                .List<MobileFriendlyNavigationChildNode>().ToList()
-                .GroupBy(node => node.ParentId)
-                .ToDictionary(grouping => grouping.Key, g => g.ToList());
-            return parents.ToDictionary(webpage => webpage,
-                webpage =>
-                    nodes.ContainsKey(webpage.Id) ? nodes[webpage.Id] : new List<MobileFriendlyNavigationChildNode>());
         }
     }
 }
