@@ -89,7 +89,12 @@ a.menu-close { display: none; }
 }
 
 @media (max-width:767px) {
-    .left-menu, .right-menu { width: 80% !important; }
+    .left-menu, .right-menu {  display: none;  }
+    .left-menu { left: 0; margin-left: 0; transform: translate3d(-100%, 0, 0); -webkit-transform: translate3d(-100%,0,0); -moz-transform: translate3d(-100%,0,0); -o-transform: translate3d(-100%,0,0); -ms-transform: translate3d(-100%,0,0); }
+    html.show-menu-left .left-menu { margin: 0; transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0); -moz-transform: translate3d(0,0,0); -o-transform: translate3d(0,0,0); -ms-transform: translate3d(0,0,0); }
+    .right-menu { right: 0; margin-right: 0; transform: translate3d(100%, 0, 0); -webkit-transform: translate3d(100%,0,0); -moz-transform: translate3d(100%,0,0); -o-transform: translate3d(100%,0,0); -ms-transform: translate3d(100%,0,0); }
+    html.show-menu-right .right-menu { margin: 0; transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0); -moz-transform: translate3d(0,0,0); -o-transform: translate3d(0,0,0); -ms-transform: translate3d(0,0,0); }
+    html.show-menu-left .left-menu, html.show-menu-right .right-menu { width: 80% !important;display: block; }
     html.show-menu-left .site-container { overflow: hidden; transform: translate3d(80%, 0, 0); -webkit-transform: translate3d(80%,0,0); -moz-transform: translate3d(80%,0,0); -o-transform: translate3d(80%,0,0); -ms-transform: translate3d(80%,0,0); }
     html.show-menu-right .site-container { overflow: hidden; transform: translate3d(-80%, 0, 0); -webkit-transform: translate3d(-80%,0,0); -moz-transform: translate3d(-80%,0,0); -o-transform: translate3d(-80%,0,0); -ms-transform: translate3d(-80%,0,0); }
     html.show-menu-left .menu-close.close-left { display: block; position: fixed; top: 0; z-index: 99999; opacity: 1; left: 80%; }
