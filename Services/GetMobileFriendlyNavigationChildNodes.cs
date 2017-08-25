@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Ajax.Utilities;
 using MrCMS.Entities.Documents.Web;
 using MrCMS.Web.Apps.MobileFriendlyNavigation.Models.MobileFriendlyNavigation;
 using NHibernate;
@@ -19,30 +20,25 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
 
         public Dictionary<Webpage, List<MobileFriendlyNavigationChildNode>> GetNodes(IEnumerable<Webpage> parents)
         {
-            Webpage webpageAlias = null;
-            MobileFriendlyNavigationChildNode nodeAlias = null;
+            var parentIds = parents.Select(parent => parent.Id).ToList();
+            var parentIdsString = string.Join(",", parentIds);
+            var query =
+                "select doc.Id as Id, doc.ParentId as ParentId, doc.Name as Name, case when " +
+                "doc.RedirectUrl<> '' then doc.RedirectUrl else doc.UrlSegment end as UrlSegment, " +
+                "doc.PublishOn, doc.DocumentType, doc.DisplayOrder," +
+                "(Select count(*) as Id From Document Where DocumentType not in ('MrCMS.Entities.Documents.Media.MediaCategory', 'MrCMS.Entities.Documents.Media.MediaFile', 'MrCMS.Entities.Documents.Layout.Layout') AND IsDeleted = 0 AND SiteId = 1 AND Published = 1 AND RevealInNavigation = 1 AND ParentId = doc.Id) as ChildCount" +
+                " FROM Document doc " +
+                "WHERE DocumentType not in ('MrCMS.Entities.Documents.Media.MediaCategory', 'MrCMS.Entities.Documents.Media.MediaFile', 'MrCMS.Entities.Documents.Layout.Layout') " +
+                "AND ParentId IN " +
+                "(" + parentIdsString + ")" +
+                " AND IsDeleted = 0 and Published = 1 and RevealInNavigation = 1 AND SiteID = 1--pass this in also " +
+                "ORDER BY DisplayOrder ASC";
 
-            var countSubNodes = QueryOver.Of<Webpage>()
-                .Where(x => x.Parent.Id == webpageAlias.Id && x.RevealInNavigation && x.PublishOn != null)
-                .ToRowCountQuery();
-
-            var parentIds = parents.Select(webpage => webpage.Id).ToList();
-            var nodes = _session.QueryOver(() => webpageAlias)
-                .Where(node => node.RevealInNavigation && node.Published)
-                .Where(node => node.Parent.Id.IsIn(parentIds))
-                .OrderBy(x => x.DisplayOrder).Asc
-                .SelectList(x => x.Select(y => y.Id).WithAlias(() => nodeAlias.Id)
-                    .Select(y => y.Parent.Id).WithAlias(() => nodeAlias.ParentId)
-                    .Select(y => y.Name).WithAlias(() => nodeAlias.Name)
-                    .Select(y => y.UrlSegment).WithAlias(() => nodeAlias.UrlSegment)
-                    .Select(y => y.PublishOn).WithAlias(() => nodeAlias.PublishOn)
-                    .Select(y => y.DocumentType).WithAlias(() => nodeAlias.DocumentType)
-                    .Select(y => y.DisplayOrder).WithAlias(() => nodeAlias.DisplayOrder)
-                    .SelectSubQuery(countSubNodes).WithAlias(() => nodeAlias.ChildCount))
-                .TransformUsing(Transformers.AliasToBean<MobileFriendlyNavigationChildNode>())
-                .List<MobileFriendlyNavigationChildNode>().ToList()
-                .GroupBy(node => node.ParentId)
+            var nodes = _session.CreateSQLQuery(query)
+                .SetResultTransformer(Transformers.AliasToBean<MobileFriendlyNavigationChildNode>())
+                .List<MobileFriendlyNavigationChildNode>().GroupBy(node => node.ParentId)
                 .ToDictionary(grouping => grouping.Key, g => g.ToList());
+
             return parents.ToDictionary(webpage => webpage,
                 webpage =>
                     nodes.ContainsKey(webpage.Id) ? nodes[webpage.Id] : new List<MobileFriendlyNavigationChildNode>());

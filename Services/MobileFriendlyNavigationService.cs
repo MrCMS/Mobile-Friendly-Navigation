@@ -45,13 +45,17 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
                             .List();
 
                         var mobileFriendlyNavigationChildNodes = _getMobileFriendlyNavigationChildNodes.GetNodes(rootNodes);
-
+                        //var test = _getMobileFriendlyNavigationChildNodes.GetNavigationNodes(rootNodes);
+                        //if (test.Any())
+                        //{
+                        //    var a = "a";
+                        //}
                         var mobileFriendlyNavigationRootNodes = rootNodes
                             .Select(root => new MobileFriendlyNavigationRootNode
                             {
                                 Id = root.Id,
                                 Name = root.Name,
-                                UrlSegment = root.LiveUrlSegment,
+                                UrlSegment = GetNavigationUrl(root),
                                 Children = GetChildNodeTransforms(mobileFriendlyNavigationChildNodes, root),
                                 DocumentType = root.GetType().FullName,
                                 DisplayOrder = root.DisplayOrder
@@ -62,6 +66,14 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
                         return mobileFriendlyNavigationRootNodes.OrderBy(node => node.DisplayOrder).ToList();
                     }, TimeSpan.FromMinutes(5), CacheExpiryType.Absolute);
             }
+        }
+
+        private string GetNavigationUrl(Webpage webpage)
+        {
+            if (webpage is Redirect)
+                return (webpage as Redirect).RedirectUrl;
+
+            return webpage.UrlSegment;
         }
 
         public List<MobileFriendlyNavigationChildNode> GetChildNodes(Webpage parent)
@@ -86,7 +98,7 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
                     Name = parent.Name,
                     ParentId = parent.Id,
                     PublishOn = parent.PublishOn,
-                    UrlSegment = parent.LiveUrlSegment,
+                    UrlSegment = GetNavigationUrl(parent),
                     DocumentType = parent.GetType().FullName,
                     DisplayOrder = 0
                 });
