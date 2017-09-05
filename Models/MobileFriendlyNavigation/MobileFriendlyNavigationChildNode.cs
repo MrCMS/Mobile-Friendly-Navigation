@@ -21,7 +21,7 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Models.MobileFriendlyNavigatio
 
         public HtmlString Url
         {
-            get { return new HtmlString((!UrlSegment.StartsWith("/") ? "/" : string.Empty) + UrlSegment); }
+            get { return UrlSegment.ToLower().Contains("http") ? new HtmlString(UrlSegment) : new HtmlString("/" + UrlSegment.TrimStart('/')); }
         }
 
 

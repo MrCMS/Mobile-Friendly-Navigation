@@ -45,11 +45,6 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
                             .List();
 
                         var mobileFriendlyNavigationChildNodes = _getMobileFriendlyNavigationChildNodes.GetNodes(rootNodes);
-                        //var test = _getMobileFriendlyNavigationChildNodes.GetNavigationNodes(rootNodes);
-                        //if (test.Any())
-                        //{
-                        //    var a = "a";
-                        //}
                         var mobileFriendlyNavigationRootNodes = rootNodes
                             .Select(root => new MobileFriendlyNavigationRootNode
                             {
@@ -71,7 +66,14 @@ namespace MrCMS.Web.Apps.MobileFriendlyNavigation.Services
         private string GetNavigationUrl(Webpage webpage)
         {
             if (webpage is Redirect)
-                return (webpage as Redirect).RedirectUrl;
+            {
+                var redirect = (Redirect)webpage;
+                if (string.IsNullOrWhiteSpace(redirect.RedirectUrl))
+                    return redirect.UrlSegment;
+                if (redirect.RedirectUrl.ToLower().Contains("http"))
+                    return redirect.RedirectUrl;
+                return "/" + redirect.RedirectUrl.TrimStart('/');
+            }
 
             return webpage.UrlSegment;
         }
